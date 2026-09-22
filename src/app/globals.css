@@ -1,0 +1,1316 @@
+@import "tailwindcss";
+
+/* =========================================================
+I Need to go through this and delete un used code
+========================================================= */
+/*
+  colours/settings used across app, colours can be
+  changed for different themes without changing every class
+*/
+:root {
+  --background: #ffffff;
+  --foreground: #222222;
+
+  --surface: #f5f5f5;
+  --border: #cccccc;
+
+  --correct: #2D9B2B;
+  --present: #FFD700;
+  --incorrect: #E12C2C;
+
+  --word-search-found: #56B4E9;
+  --word-search-selected: #D55E00;
+
+  --app-font: Calibri, Arial, sans-serif;
+}
+
+
+* {
+  
+  box-sizing: border-box;
+}
+
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--app-font);
+}
+
+
+
+/* keep form controls for whatevr font is selected */
+button,
+input,
+select,
+textarea {
+  font-family: var(--app-font);
+}
+
+
+button {
+  cursor: pointer;
+}
+
+
+
+/* =========================================================
+WORDLE — RESPONSIVE GRID
+========================================================= */
+
+.wordle-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* updated* center by default now relative */
+  position: relative;
+}
+
+
+.board {
+  display: grid;
+
+  /* 6 rows might change later for dif*/
+  grid-template-rows: repeat(6, 1fr);
+
+  gap: 8px;
+  margin: 10px auto;
+  width: 100%;
+  max-width: 360px;
+}
+
+
+.row {
+  display: grid;
+
+  
+  grid-template-columns: repeat(5, 1fr);
+
+  gap: 8px;
+}
+
+
+.tile {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* keeps the text from getting too messed up on diff screens */
+  font-size: clamp(1rem, 3vw, 1.6rem);
+
+  font-weight: bold;
+  background: var(--surface);
+  color: var(--foreground);
+}
+
+
+.tile.correct {
+  background-color: var(--correct);
+  color: #fff;
+}
+
+
+.tile.present {
+  background-color: var(--present);
+  color: #000;
+}
+
+
+.tile.incorrect {
+  background-color: var(--incorrect);
+  color: #fff;
+}
+
+
+
+/* =========================================================
+WORDLE — RESPONSIVE KEYBOARD
+========================================================= */
+
+.keyboard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 20px auto;
+  width: 100%;
+  max-width: 500px;
+}
+
+
+.keyboard-row {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+
+.key {
+  padding: clamp(8px, 2vw, 14px);
+  min-width: clamp(32px, 6vw, 48px);
+  font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  color: var(--foreground);
+  cursor: pointer;
+  text-align: center;
+}
+
+
+.key:hover {
+  background: var(--border);
+}
+
+
+
+/* =========================================================
+WIN POPUP — RESPONSIVE
+========================================================= */
+
+.win-popup {
+  position: fixed;
+
+  /* inset: 0 = popup cover the screen */
+  inset: 0;
+
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.popup-content {
+  background: var(--surface);
+  color: var(--foreground);
+  padding: clamp(20px, 4vw, 30px);
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  text-align: center;
+  width: clamp(240px, 60vw, 300px);
+}
+
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin: 20px 0;
+}
+
+
+.action-btn {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  padding: clamp(10px, 2vw, 14px);
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  border-radius: 6px;
+  color: var(--foreground);
+}
+
+
+.action-btn:hover {
+  background: var(--border);
+}
+
+
+
+/* =========================================================
+DIFFICULTY BOX — RESPONSIVE
+========================================================= */
+
+.difficulty-box {
+  position: relative; 
+  align-self: flex-end; /* fixed* stays on the right finally */
+  margin-right: 20px;
+  margin-bottom: 10px;
+
+  width: 160px; 
+  padding: 10px; 
+  border-radius: 10px;
+
+  background: var(--surface);
+  border: 2px solid var(--border);
+  color: var(--foreground);
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  font-size: 0.9rem; 
+}
+
+
+.difficulty-box select {
+  padding: 8px;
+  font-size: 16px;
+  border: 2px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+}
+
+
+
+/* =========================================================
+GENERATE HTML BUTTON
+========================================================= */
+
+.generate-btn {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  padding: clamp(4px, 2vw, 4px);
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  border-radius: 6px;
+  color: var(--foreground);
+}
+
+
+.generate-btn:hover {
+  background: var(--border);
+}
+
+
+
+/* =========================================================
+LEGEND
+========================================================= */
+
+.colour-key {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin: 6px auto 10px;
+}
+
+
+.key-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+
+.key-item .tile {
+  width: 25px;
+  height: 25px;
+  border-radius: 4px;
+  border: 2px solid var(--border);
+}
+
+
+
+
+
+
+
+
+
+
+/* =========================================================
+WORD SEARCH — CONTAINER
+========================================================= */
+
+.ws-container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
+  position: relative;
+
+  /* local variables so the word search can use theme */
+  --ws-bg: var(--surface);
+  --ws-text: var(--foreground);
+  --ws-border: var(--border);
+}
+
+
+.dark-mode .ws-container {
+  --ws-bg: #2a2a2a;
+  --ws-text: white;
+  --ws-border: #555;
+}
+
+
+
+/* =========================================================
+WORD SEARCH — RESPONSIVE GRID
+========================================================= */
+
+.word-search-grid {
+  display: grid;
+
+  /* fixed 10 x 10 word search layout */
+  grid-template-columns: repeat(10, 1fr);
+
+  gap: 4px;
+  width: 100%;
+  max-width: 400px;
+  margin: 20px auto;
+
+  /* stops text being selected while dragging/highlighting */
+  user-select: none;
+}
+
+
+.word-search-row {
+  /* Row wrapper doesnt effectc(lets the grid items behave as if the row wrapper isn't there) */
+  display: contents;
+}
+
+
+.word-search-row button {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  border: 1px solid var(--ws-border);
+  background: var(--ws-bg);
+  color: var(--ws-text);
+  font-size: clamp(0.8rem, 2vw, 1.4rem);
+  cursor: pointer;
+}
+
+
+
+/* =========================================================
+SELECTION + FOUND COLOURS
+========================================================= */
+
+.selected {
+  /* !important makes the selected state override the normal tile colour */
+  background: var(--word-search-selected) !important;
+  color: white !important;
+}
+
+
+.found {
+  background: var(--word-search-found) !important;
+  color: white !important;
+}
+
+
+
+/* =========================================================
+WORD LIST — RESPONSIVE
+========================================================= */
+
+.ws-word-list {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+
+.ws-column {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+
+  
+  width: clamp(140px, 30vw, 200px);
+
+  text-align: left;
+}
+
+
+.ws-word-item {
+  padding-bottom: 5px;
+}
+
+
+.ws-word-item button {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 14px;
+  color: var(--foreground);
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+
+.ws-word-item button:hover {
+  background: var(--border);
+}
+
+
+
+/* =========================================================
+HINT BUTTON + HINT BOX — RESPONSIVE
+========================================================= */
+
+.ws-hint-btn {
+  padding: clamp(6px, 2vw, 10px) clamp(10px, 3vw, 14px);
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  color: var(--foreground);
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+  cursor: pointer;
+  margin-top: 6px;
+  display: inline-block;
+}
+
+
+.ws-hint-btn:hover {
+  background: var(--border);
+}
+
+
+.ws-hint-box {
+  padding: clamp(8px, 2vw, 12px);
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+
+
+/* =========================================================
+TOOLTIP
+========================================================= */
+
+.tooltip {
+  background: black;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+
+  /* tooltip shouldn't block clicks/hovering on the element underneath */
+  pointer-events: none;
+
+  z-index: 9999;
+  white-space: nowrap;
+}
+
+
+
+/* =========================================================
+WIN POPUP — THEME MATCHED
+========================================================= */
+
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* keeps popup above the rest of the interface */
+  z-index: 9999;
+}
+
+
+.popup-content {
+  background: var(--surface);
+  color: var(--foreground);
+  padding: clamp(20px, 4vw, 30px);
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  text-align: center;
+  width: clamp(240px, 60vw, 300px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+
+.popup-content button {
+  margin-top: 20px;
+  padding: clamp(10px, 2vw, 16px);
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  color: var(--foreground);
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+  cursor: pointer;
+}
+
+
+.popup-content button:hover {
+  background: var(--border);
+}
+
+
+
+
+
+
+
+
+
+
+
+/* =========================================================
+NAVIGATION BAR
+========================================================= */
+
+.navbar {
+  width: 100%;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--app-font);
+  border-bottom: 2px solid var(--border);
+
+  /* navbar needs to stay above page content */
+  position: relative;
+  z-index: 1000;
+}
+
+
+.navbar-inner {
+  position: relative;
+  min-height: 65px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+
+
+.navbar-title {
+  color: var(--foreground);
+  text-decoration: none;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+
+.navbar-title:hover {
+  color: var(--foreground);
+}
+
+
+.hamburger-button {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 7px;
+  padding: 7px;
+  cursor: pointer;
+}
+
+
+.hamburger-button:hover {
+  background: var(--border);
+}
+
+
+.hamburger-button span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--foreground);
+  border-radius: 2px;
+
+  /* used when the hamburger changes into the X */
+  transition: all 0.2s ease;
+}
+
+
+.hamburger-button.open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+
+.hamburger-button.open span:nth-child(2) {
+  opacity: 0;
+}
+
+
+.hamburger-button.open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+
+.navbar-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 20px;
+  width: 200px;
+  background: var(--surface);
+  color: var(--foreground);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+
+
+.navbar-menu a {
+  display: block;
+  padding: 11px 12px;
+  color: var(--foreground);
+  text-decoration: none;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+
+.navbar-menu a:hover {
+  background: var(--border);
+}
+
+
+.dark-mode .navbar {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+
+.dark-mode .navbar-menu {
+  background: var(--surface);
+  color: var(--foreground);
+}
+
+
+.dark-mode .hamburger-button {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+
+.dark-mode .hamburger-button span {
+  background: var(--foreground);
+}
+
+
+/* mobile navbar changes */
+@media (max-width: 600px) {
+
+  .navbar-inner {
+    min-height: 60px;
+    padding: 0 12px;
+  }
+
+
+  .navbar-title {
+    font-size: 18px;
+  }
+
+
+  .navbar-menu {
+    right: 12px;
+    width: 190px;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* =========================================================
+SETTINGS PAGE
+========================================================= */
+
+.settings-page {
+  min-height: calc(100vh - 65px);
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--app-font);
+  padding: 40px 20px 60px;
+}
+
+
+.settings-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+
+.settings-header {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+
+.settings-header h1 {
+  margin: 0 0 10px;
+  font-size: 36px;
+  font-weight: bold;
+  color: var(--foreground);
+}
+
+
+.settings-header p {
+  margin: 0 auto;
+  max-width: 600px;
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--foreground);
+}
+
+
+.settings-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  color: var(--foreground);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.settings-card-header {
+  margin-bottom: 20px;
+}
+
+
+.settings-card-header h2 {
+  margin: 0 0 6px;
+  font-size: 22px;
+  font-weight: bold;
+  color: var(--foreground);
+}
+
+
+.settings-card-header p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--foreground);
+}
+
+
+
+.settings-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--foreground);
+}
+
+
+.settings-select {
+  min-width: 220px;
+  padding: 10px 12px;
+  background: var(--background);
+  color: var(--foreground);
+  border: 2px solid var(--border);
+  border-radius: 7px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+
+.settings-select:hover {
+  border-color: var(--foreground);
+}
+
+.settings-select:focus {
+  /* visible focus outline for keyboard users */
+  outline: 3px solid var(--border);
+  outline-offset: 2px;
+}
+
+
+.dark-mode-setting {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  background: var(--background);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+
+.dark-mode-setting input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--foreground);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+
+.dark-mode-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--foreground);
+}
+
+
+.dark-mode-text strong {
+  font-size: 16px;
+}
+
+
+.dark-mode-text small {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+
+.current-settings {
+  margin-top: 5px;
+}
+
+
+.settings-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+
+.settings-summary-item {
+  background: var(--background);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+
+.settings-summary-item span {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+
+.settings-summary-item strong {
+  font-size: 16px;
+  color: var(--foreground);
+}
+
+
+.dark-mode .settings-page {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+
+.dark-mode .settings-card {
+  background: var(--surface);
+  color: var(--foreground);
+}
+
+
+.dark-mode .settings-select,
+.dark-mode .dark-mode-setting,
+.dark-mode .settings-summary-item {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+
+
+/* =========================================================
+RESPONSIVE — SETTINGS PAGE
+========================================================= */
+
+@media (max-width: 600px) {
+
+  .settings-page {
+    padding: 30px 15px 50px;
+  }
+
+
+  .settings-header h1 {
+    font-size: 30px;
+  }
+
+
+  .settings-card {
+    padding: 20px;
+  }
+
+
+  .settings-label {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+
+  .settings-select {
+    width: 100%;
+    min-width: 0;
+  }
+
+
+  .settings-summary {
+    grid-template-columns: 1fr;
+  }
+
+
+  /* MOBILE FIX FOR DIFFICULTY BOX */
+  .difficulty-box {
+    position: static;
+    width: 85%;
+    max-width: 240px;
+    margin: 0 auto 16px;
+    padding: 10px;
+    text-align: center;
+    border-radius: 10px;
+    font-size: 0.9rem;
+  }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* =========================================================
+ HOME PAGE COLOUR BORDERS
+========================================================= */
+
+.home-page {
+  position: relative;
+  overflow-x: hidden;
+}
+
+
+
+/* =========================================================
+ COLOUR BARS
+========================================================= */
+
+.home-colour-bar {
+  position: fixed;
+
+  top: 0;
+  bottom: 0;
+
+  width: 12px;
+
+  display: flex;
+  flex-direction: column;
+
+  /* sits behind the actual home page content so wont block!!!*/
+  z-index: 1;
+
+  /* decorative  */
+  pointer-events: none;
+}
+
+
+/* Left and right positioning */
+
+.home-colour-bar-left {
+  left: 0;
+}
+
+
+.home-colour-bar-right {
+  right: 0;
+}
+
+
+
+/* =========================================================
+ INDIVIDUAL COLOUR SECTIONS
+========================================================= */
+
+.home-colour {
+  /* each colour gets an equal amount of bar */
+  flex: 1;
+  width: 100%;
+}
+
+
+/* Green */
+
+.home-colour-green {
+  background: var(--correct);
+}
+
+
+/* Yellow */
+
+.home-colour-yellow {
+  background: var(--present);
+}
+
+
+/* Red */
+
+.home-colour-red {
+  background: var(--incorrect);
+}
+
+
+
+/* =========================================================
+ KEEP CONTENT ABOVE THE BARS
+========================================================= */
+
+.home-page > section {
+  position: relative;
+
+  /* keeps  page content above the bar */
+  z-index: 2;
+}
+
+
+
+/* =========================================================
+ MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+  
+  .home-colour-bar {
+    width: 7px;
+  }
+}
+
+
+
+
+/* =========================================================
+WORDLE CREATION PAGE
+========================================================= */
+
+.wordle-create-page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.wordle-create-page h1 {
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+.wordle-create-page label {
+  display: block;
+  margin: 10px 0 6px;
+  font-weight: bold;
+}
+
+.wordle-create-page input,
+.wordle-create-page textarea,
+.wordle-create-page select {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--foreground);
+  font-size: 16px;
+}
+
+.wordle-create-page textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.wordle-create-page button {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 16px;
+  color: var(--foreground);
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.wordle-create-page button:hover {
+  background: var(--border);
+}
+
+
+
+/* ============================
+Dark mode: keyboard, keys, text, inputs, boxes
+Append these to globals.css
+============================ */
+
+/* Keyboard container background and keyboard-row/key defaults */
+.dark-mode .keyboard {
+  background: transparent;
+  max-width: 500px;
+  margin: 20px auto;
+  gap: 10px;
+}
+
+/* Individual key appearance in dark mode */
+.dark-mode .key {
+  background: #1f1f1f;            /* darker surface */
+  border: 2px solid #3a3a3a;     /* darker border */
+  color: #eaeaea;                /* light text */
+  box-shadow: none;
+}
+
+/* Hover and active states for keys */
+.dark-mode .key:hover {
+  background: #2a2a2a;
+  border-color: #555;
+}
+
+/* Key states (correct/present/incorrect) should remain visible on dark background */
+.dark-mode .tile.correct { color: #fff; }
+.dark-mode .tile.present { color: #000; }
+.dark-mode .tile.incorrect { color: #fff; }
+
+/* Ensure keyboard rows and keys remain readable on small screens */
+.dark-mode .keyboard-row { justify-content: center; }
+
+/* Form controls, inputs, selects, textareas, buttons and cards */
+.dark-mode input,
+.dark-mode textarea,
+.dark-mode select,
+.dark-mode button,
+.dark-mode .settings-card,
+.dark-mode .popup-content,
+.dark-mode .generate-btn,
+.dark-mode .action-btn,
+.dark-mode .settings-select,
+.dark-mode .difficulty-box {
+  background: #1b1b1b;           /* dark surface */
+  color: #eaeaea;               /* light text */
+  border-color: #3a3a3a;        /* darker border */
+}
+
+/* Focus outlines for accessibility in dark mode */
+.dark-mode input:focus,
+.dark-mode textarea:focus,
+.dark-mode select:focus,
+.dark-mode .settings-select:focus {
+  outline: 3px solid rgba(255,255,255,0.06);
+  outline-offset: 2px;
+}
+
+/* Placeholder text contrast */
+.dark-mode ::placeholder {
+  color: rgba(234,234,234,0.6);
+}
+
+/* Popup content and overlays */
+.dark-mode .popup,
+.dark-mode .win-popup {
+  background: rgba(0,0,0,0.6);
+}
+
+.dark-mode .popup-content,
+.dark-mode .win-popup .popup-content {
+  background: #222;
+  color: #f5f5f5;
+  border-color: #333;
+}
+
+/* Word search tiles in dark mode */
+.dark-mode .word-search-row button {
+  background: #1b1b1b;
+  color: #eaeaea;
+  border: 1px solid #333;
+}
+
+/* Selected / found states remain visible */
+.dark-mode .selected { background: var(--word-search-selected) !important; color: white !important; }
+.dark-mode .found { background: var(--word-search-found) !important; color: white !important; }
+
+/* Navbar adjustments (if needed) */
+.dark-mode .navbar {
+  background: #121212;
+  color: #eaeaea;
+  border-bottom-color: #2b2b2b;
+}
+.dark-mode .navbar-menu {
+  background: #1b1b1b;
+  border-color: #333;
+}
+
+/* Settings page cards and summary items */
+.dark-mode .settings-card,
+.dark-mode .settings-summary-item {
+  background: #161616;
+  border-color: #2b2b2b;
+  color: #eaeaea;
+}
+
+/* Small tweak for action buttons */
+.dark-mode .action-btn,
+.dark-mode .generate-btn {
+  background: #1b1b1b;
+  border-color: #333;
+  color: #eaeaea;
+}
+
+/* Ensure body-level variables are consistent (optional override) */
+.dark-mode {
+  --background: #0f0f0f;
+  --foreground: #eaeaea;
+  --surface: #161616;
+  --border: #2b2b2b;
+}
+
+
+/*Edit page*/
+.word-edit-card {
+  background: var(--surface);
+  color: var(--foreground);
+  padding: 18px;
+  border-radius: 8px;
+  width: 720px;
+  max-width: 95%;
+  border: 2px solid var(--border);
+}
+
+/* Optional but keeps consistency */
+.dark-mode .word-edit-card {
+  background: var(--surface);
+  color: var(--foreground);
+  border-color: var(--border);
+}
