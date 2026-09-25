@@ -1,15 +1,3 @@
-// src/components/WordEditModal.tsx
-// -------------------------------------------------------------
-// Word Edit Modal (Wordle)
-//
-// redo 5: fixed formatting — do on others later
-//
-// 
-// This modal loads a single word from the activity,
-// lets me edit english/hint/phonemes, and then patches it.
-// 
-// -------------------------------------------------------------
-
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -32,20 +20,14 @@ export default function WordEditModal({
   const [loading, setLoading] = useState(true);
   const [english, setEnglish] = useState("");
   const [hint, setHint] = useState("");
-  const [phonemes, setPhonemes] = useState<{ symbol: string; position: number }[]>([]);
+  const [phonemes, setPhonemes] = useState<
+    { symbol: string; position: number }[]
+  >([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-
-
-  
   // -------------------------------------------------------------
   // Load word from activity
-  //
-  // NOTE:
-  // - WordSearch edit uses a different route entirely. 
-  // (did them at diffrent points in time and this is what worked)
-  // - Wordle stores phonemes as objects { symbol, position }.
   // -------------------------------------------------------------
   useEffect(() => {
     let mounted = true;
@@ -83,12 +65,11 @@ export default function WordEditModal({
   }, [activityId, wordId]);
 
   // -------------------------------------------------------------
-  // Add phoneme (append at end)
+  // Add phoneme
   // -------------------------------------------------------------
   function addPhoneme(symbol: string) {
     setPhonemes((prev) => [...prev, { symbol, position: prev.length }]);
   }
-
 
   // -------------------------------------------------------------
   // Save word (PATCH)
@@ -115,29 +96,54 @@ export default function WordEditModal({
     }
   }
 
-
-
   // -------------------------------------------------------------
   // Early return
   // -------------------------------------------------------------
-  if (loading) return <div className="modal">Loading…</div>;
+  if (loading) {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(0,0,0,0.4)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 9999,
+        }}
+      >
+        <div className="word-edit-card">Loading…</div>
+      </div>
+    );
+  }
 
   // -------------------------------------------------------------
-  // Render
+  // Render modal
   // -------------------------------------------------------------
   return (
     <div
       style={{
         position: "fixed",
         inset: 0,
+        background: "rgba(0,0,0,0.4)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "rgba(0,0,0,0.4)",
         zIndex: 9999,
+
+        // ⭐ NEW: allow scrolling if modal is taller than screen
+        overflowY: "auto",
+        padding: "20px",
       }}
     >
-      <div className="word-edit-card">
+      <div
+        className="word-edit-card"
+        style={{
+          // ⭐ NEW: prevent modal from exceeding viewport height
+          maxHeight: "90vh",
+          overflowY: "auto",
+        }}
+      >
         <h3>Edit word</h3>
 
         {error && <div style={{ color: "red" }}>{error}</div>}
@@ -180,7 +186,6 @@ export default function WordEditModal({
                   alignItems: "center",
                 }}
               >
-                {/* Symbol */}
                 <input
                   value={p.symbol}
                   onChange={(e) => {
@@ -196,7 +201,6 @@ export default function WordEditModal({
                   }}
                 />
 
-                {/* Position */}
                 <input
                   type="number"
                   value={p.position}
@@ -213,7 +217,6 @@ export default function WordEditModal({
                   }}
                 />
 
-                {/* Remove */}
                 <button
                   onClick={() =>
                     setPhonemes((prev) => prev.filter((_, idx) => idx !== i))
@@ -225,7 +228,7 @@ export default function WordEditModal({
             ))}
           </div>
 
-          {/* Add phoneme keyboard */}
+          {/* Phoneme keyboard */}
           <div style={{ marginTop: 12 }}>
             <h4 style={{ marginBottom: 6 }}>Add phoneme:</h4>
 

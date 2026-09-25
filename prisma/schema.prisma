@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Activity {
+  id         Int           @id @default(autoincrement())
+  title      String
+  type       String        // WORDLE
+  difficulty Int
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  //WordSearch (JSON stored as string)
+  grid        String?      // JSON string
+  placements  String?      // JSON string
+
+  words      ActivityWord[]
+}
+
+model ActivityWord {
+  id         Int           @id @default(autoincrement())
+  english    String
+  hint       String?
+  activityId Int
+  activity   Activity      @relation(fields: [activityId], references: [id])
+  phonemes   WordPhoneme[]
+}
+
+model WordPhoneme {
+  id       Int    @id @default(autoincrement())
+  symbol   String
+  position Int
+  wordId   Int
+  word     ActivityWord @relation(fields: [wordId], references: [id])
+}

@@ -11,12 +11,12 @@ export default function HomePage() {
   const [randomWordSearchId, setRandomWordSearchId] = useState<number | null>(null);
 
   // -------------------------------------------------------------
-  // Load random activities on mount
+  // Load random activities
   //
   // NOTE TO SELF:
   // - Wordle uses uppercase "WORDLE" (I dont rember why I did that)
-  // - WordSearch uses lowercase "wordsearch"
-  //   > aka backend is inconsistent, but this works.
+  // - WordSearch uses uppercase now
+  //   > aka backend inconsistenties is being updated
   // -------------------------------------------------------------
   useEffect(() => {
     async function loadRandom() {
@@ -25,7 +25,7 @@ export default function HomePage() {
         const activities = await res.json();
 
         const wordles = activities.filter((a: any) => a.type === "WORDLE");
-        const searches = activities.filter((a: any) => a.type === "wordsearch");
+        const searches = activities.filter((a: any) => a.type === "WORDSEARCH");
 
         if (wordles.length > 0) {
           const w = wordles[Math.floor(Math.random() * wordles.length)];

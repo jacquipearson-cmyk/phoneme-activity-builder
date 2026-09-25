@@ -1288,7 +1288,7 @@ Append these to globals.css
   color: #eaeaea;
 }
 
-/* Ensure body-level variables are consistent (optional override) */
+/* Ensure body-level variables are consistent */
 .dark-mode {
   --background: #0f0f0f;
   --foreground: #eaeaea;
@@ -1308,7 +1308,7 @@ Append these to globals.css
   border: 2px solid var(--border);
 }
 
-/* Optional but keeps consistency */
+
 .dark-mode .word-edit-card {
   background: var(--surface);
   color: var(--foreground);
