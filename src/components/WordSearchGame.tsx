@@ -46,12 +46,12 @@ export default function WordSearchGame({ activityId }: { activityId: number }) {
       const res = await fetch(`/api/activities/${activityId}`);
       const data = await res.json();
 
-      // ⭐ Parse grid JSON (string → array)
+      // Parse grid JSON (string → array)
       const parsedGrid: string[][] = Array.isArray(data.grid)
         ? data.grid
         : JSON.parse(data.grid || "[]");
 
-      // ⭐ Convert grid symbols → Cell objects
+      // Convert grid symbols → Cell objects
       const cellsGrid: Cell[][] = parsedGrid.map((row, r) =>
         row.map((symbol, c) => ({
           symbol,

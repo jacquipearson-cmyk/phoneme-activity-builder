@@ -96,6 +96,42 @@ export async function POST(req: Request) {
       },
     });
 
+    // -------------------------------------------------------------
+    // INSTRUMENTATION: Update global metrics + create stats row
+    // -------------------------------------------------------------
+
+    // Ensure global metrics row exists
+    await prisma.appMetrics.upsert({
+      where: { id: 1 },
+      update: {},
+      create: { id: 1 },
+    });
+
+    // Increment global counters
+    await prisma.appMetrics.update({
+      where: { id: 1 },
+      data: {
+        totalActivities: { increment: 1 },
+        totalWordleActivities:
+          activity.type === "WORDLE" ? { increment: 1 } : undefined,
+        totalWordSearchActivities:
+          activity.type === "WORDSEARCH" ? { increment: 1 } : undefined,
+      },
+    });
+
+    // Create per‑activity stats row
+    await prisma.activityStats.create({
+      data: {
+        activityId: activity.id,
+        successfulGenerations: 0,
+        failedGenerations: 0,
+        totalViews: 0,
+        totalTimeOnPageMs: 0,
+      },
+    });
+
+    // -------------------------------------------------------------
+
     return NextResponse.json(activity);
   } catch (error) {
     console.error("POST /api/activities ERROR:", error);

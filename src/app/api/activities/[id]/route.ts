@@ -18,8 +18,6 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 function devErrorResponse(err: any) {
-  // NOTE: This is just a debug helper I made when everything kept breaking.
-  // Remove the stack trace Later!!!!!
   return NextResponse.json(
     {
       error: "Failed to load activity",
@@ -32,11 +30,8 @@ function devErrorResponse(err: any) {
 
 // -------------------------------------------------------------
 // GET single activity
-// NOTE: This is basically duplicated in the HTML export route.
-// Also duplicated in the Wordle edit modal.
-// ALSO: Unify this into a helper
 // -------------------------------------------------------------
-export async function GET(_req: Request, context: { params: any }) {
+export async function GET(req: Request, context: { params: any }) {
   try {
     const params = await context.params;
     const id = Number(params?.id);
@@ -45,8 +40,7 @@ export async function GET(_req: Request, context: { params: any }) {
       return NextResponse.json({ error: "Invalid id" }, { status: 400 });
     }
 
-    // NOTE: This used to only include phonemes for Wordle.
-    // Then I decided WordSearch needed them too, so now everything includes everything.
+    // Load activity
     const activity = await prisma.activity.findUnique({
       where: { id },
       include: { words: { include: { phonemes: true } } },
@@ -56,15 +50,64 @@ export async function GET(_req: Request, context: { params: any }) {
       return NextResponse.json({ error: "Activity not found" }, { status: 404 });
     }
 
-    // WordSearch-only fields (Wordle ignores these)
-    // NOTE: remeber you updated this!!!
-    // JSON strings because Prisma hates JSON in SQLite.
+    // -------------------------------------------------------------
+    // INSTRUMENTATION: Count views
+    // -------------------------------------------------------------
+    try {
+      // Ensure stats row exists
+      await prisma.activityStats.upsert({
+        where: { activityId: id },
+        update: {},
+        create: {
+          activityId: id,
+          successfulGenerations: 0,
+          failedGenerations: 0,
+          totalViews: 0,
+          totalTimeOnPageMs: 0,
+        },
+      });
+
+      // Increment view count
+      await prisma.activityStats.update({
+        where: { activityId: id },
+        data: {
+          totalViews: { increment: 1 },
+        },
+      });
+    } catch (err) {
+      console.error("Instrumentation error (view count):", err);
+    }
+
+    // -------------------------------------------------------------
+    // OPTIONAL: Time-on-page support
+    // Client can POST timeOnPageMs later
+    // -------------------------------------------------------------
+    const timeOnPageHeader = req.headers.get("x-time-on-page-ms");
+    if (timeOnPageHeader) {
+      const ms = Number(timeOnPageHeader);
+      if (!Number.isNaN(ms)) {
+        try {
+          await prisma.activityStats.update({
+            where: { activityId: id },
+            data: {
+              totalTimeOnPageMs: { increment: ms },
+            },
+          });
+        } catch (err) {
+          console.error("Instrumentation error (time on page):", err);
+        }
+      }
+    }
+
+    // -------------------------------------------------------------
+    // WordSearch-only fields (JSON strings)
+    // -------------------------------------------------------------
     const parsedGrid = activity.grid ? JSON.parse(activity.grid) : null;
     const parsedPlacements = activity.placements
       ? JSON.parse(activity.placements)
       : null;
 
-    // This is duplicated in like 5 places and I will do somthing about it later.
+    // Sort phonemes
     activity.words = activity.words.map((w) => ({
       ...w,
       phonemes: (w.phonemes || [])
@@ -88,25 +131,6 @@ export async function GET(_req: Request, context: { params: any }) {
 
 // -------------------------------------------------------------
 // PATCH update activity
-//
-// NOTE TO SELF:
-// This is the part that you keep chaning
-//
-//WordSearch needs:
-// - grid
-// - placements
-// - multiple words
-// - phonemes as strings
-//
-// Wordle needs:
-// - phonemes as objects
-//
-// Final version:
-// - Delete all words + phonemes
-// - Recreate them from scratch
-// - Works for both Wordle + WordSearch
-//
-// Brute force cuase I dont have time
 // -------------------------------------------------------------
 export async function PATCH(req: Request, context: { params: any }) {
   try {
@@ -128,16 +152,12 @@ export async function PATCH(req: Request, context: { params: any }) {
           ? { difficulty: Number(body.difficulty) }
           : {}),
         ...(body.type !== undefined ? { type: body.type } : {}),
-
-        // WordSearch-only fields
-        // NOTE: NO LONGER OBJECTS!!
         grid: JSON.stringify(body.grid ?? null),
         placements: JSON.stringify(body.placements ?? null),
       },
     });
 
-    // STEP 2: Delete old words + phonemes
-    // Nuke and Rebuild cuase at least it works
+    // Delete old words + phonemes
     await prisma.wordPhoneme.deleteMany({
       where: { word: { activityId: id } },
     });
@@ -146,11 +166,7 @@ export async function PATCH(req: Request, context: { params: any }) {
       where: { activityId: id },
     });
 
-    // STEP 3: Recreate words + phonemes
-    // NOTE: WordSearch sends phonemes as strings.
-    // Wordle sends phonemes as objects.
-    // But this route ONLY handles WordSearch-style editing,
-    // so phonemes are always strings here
+    // Recreate words + phonemes
     if (Array.isArray(body.words)) {
       for (const w of body.words) {
         const newWord = await prisma.activityWord.create({
@@ -161,9 +177,6 @@ export async function PATCH(req: Request, context: { params: any }) {
           },
         });
 
-        // NOTE: WordSearch phonemes = ["p", "a", "t"]
-        // Wordle phonemes = [{ symbol, position }]
-        // Wordle does NOT use this route for editing
         await prisma.wordPhoneme.createMany({
           data: w.phonemes.map((symbol: string, index: number) => ({
             symbol,
@@ -174,8 +187,7 @@ export async function PATCH(req: Request, context: { params: any }) {
       }
     }
 
-    // STEP 4: Reload activity (again)
-    // NOTE: Duplicated logic from GET. 
+    // Reload activity
     const finalActivity = await prisma.activity.findUnique({
       where: { id },
       include: {
@@ -187,7 +199,6 @@ export async function PATCH(req: Request, context: { params: any }) {
       },
     });
 
-    // Sort phonemes
     finalActivity!.words = finalActivity!.words.map((w) => ({
       ...w,
       phonemes: w.phonemes.slice().sort((a, b) => a.position - b.position),
@@ -205,10 +216,6 @@ export async function PATCH(req: Request, context: { params: any }) {
 
 // -------------------------------------------------------------
 // DELETE activity
-//
-// NOTE TO SELF:
-// keep same cuase working!!
-// Delete phonemes > delete words > delete activity.
 // -------------------------------------------------------------
 export async function DELETE(req: Request, context: { params: any }) {
   try {

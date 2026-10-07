@@ -2,7 +2,7 @@
 // -------------------------------------------------------------
 // WORDLE HTML EXPORT ROUTE!!!
 //
-// 
+//
 // This is the route that spits out the downloadable HTML file.
 // Only works for WORDLE (not WordSearch). WordSearch is done 
 // diffrently cuase I had no energy!!
@@ -15,49 +15,35 @@
 // routes. I did this first then decided to do it diffrently 
 // but had no time to change it/ didn't want to
 // -------------------------------------------------------------
-
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateWordleHTML } from "@/lib/generateWordleHTML";
-
-// Optional server-side phoneme dataset
-// NOTE: If this file doesn't exist, everything still works.
-// I added this from the old broken one cuase I didn't want to waste it
-// but then forgot to actually use it anywhere beside the 2 wordle files, so I might change it later?
-import { phonemes as serverPhonemes } from "@/data/phonemes"; // optional; safe if file exists
+import { phonemes as serverPhonemes } from "@/data/phonemes";
 
 interface RouteParams { params: any; }
 
 export async function GET(req: Request, context: RouteParams) {
   try {
-    // -------------------------------------------------------------
-    // Grab ID from route params
-    // NOTE: App Router does this weird "context.params" thing.
-    // -------------------------------------------------------------
     const params = await context.params;
     const id = Number(params?.id);
     if (Number.isNaN(id)) {
       return NextResponse.json({ error: "Invalid activity id" }, { status: 400 });
     }
 
-    // -------------------------------------------------------------
-    // Load activity + words + phonemes
-    // NOTE: This is duplicated logic from the main GET route.
-    // -------------------------------------------------------------
     const activity = await prisma.activity.findUnique({
       where: { id },
       include: { words: { include: { phonemes: true } } },
     });
 
-    if (!activity) return NextResponse.json({ error: "Activity not found" }, { status: 404 });
+    if (!activity)
+      return NextResponse.json({ error: "Activity not found" }, { status: 404 });
 
     const word = activity.words[0];
-    if (!word) return NextResponse.json({ error: "No word found for this activity" }, { status: 404 });
+    if (!word)
+      return NextResponse.json({ error: "No word found for this activity" }, { status: 404 });
 
     // -------------------------------------------------------------
     // Read settings from cookies
-    // NOTE: This is the same logic used in the Wordle game page.
-    // Future to do: move this into a helper
     // -------------------------------------------------------------
     const cookieHeader = req.headers.get("cookie") || "";
     const cookies = Object.fromEntries(
@@ -67,7 +53,6 @@ export async function GET(req: Request, context: RouteParams) {
       })
     );
 
-    // NOTE: Only allowing fonts I trust because HTML export wsa being picky
     const font =
       cookies["phoneme-font"] === "Calibri" ||
       cookies["phoneme-font"] === "Arial" ||
@@ -75,7 +60,6 @@ export async function GET(req: Request, context: RouteParams) {
         ? cookies["phoneme-font"]
         : "Calibri";
 
-    // NOTE: Colour scheme is also duplicated logic from the game.
     const colourScheme =
       cookies["phoneme-colours"] === "default" ||
       cookies["phoneme-colours"] === "saturated" ||
@@ -89,26 +73,20 @@ export async function GET(req: Request, context: RouteParams) {
 
     // -------------------------------------------------------------
     // Build keyboard
-    // NOTE: If serverPhonemes exists, use that. Otherwise fallback
-    // to phonemes from the actual word. future me: update to not be messy.
     // -------------------------------------------------------------
     let keyboard: string[] = [];
     try {
       if (Array.isArray(serverPhonemes) && serverPhonemes.length > 0) {
         keyboard = serverPhonemes.map((p: any) => p.symbol);
       }
-    } catch {
-      // NOTE: If import fails, just ignore it. This is fine.
-    }
+    } catch {}
 
-    // fallback if serverPhonemes is empty or missing
     if (keyboard.length === 0) {
       keyboard = Array.from(new Set(word.phonemes.map((p) => p.symbol)));
     }
 
     // -------------------------------------------------------------
     // Generate HTML
-    // NOTE: Sorting phonemes again cuase I changed the logic
     // -------------------------------------------------------------
     const html = generateWordleHTML({
       english: word.english,
@@ -123,18 +101,68 @@ export async function GET(req: Request, context: RouteParams) {
     });
 
     // -------------------------------------------------------------
-    // Return HTML file
-    // NOTE: This forces a download with a filename based on the word.
+    // INSTRUMENTATION FIX — ensure stats row exists
     // -------------------------------------------------------------
+    try {
+      await prisma.appMetrics.upsert({
+        where: { id: 1 },
+        update: {},
+        create: { id: 1 },
+      });
+
+      await prisma.appMetrics.update({
+        where: { id: 1 },
+        data: {
+          totalGeneratedOutputs: { increment: 1 },
+        },
+      });
+
+      // ⭐ FIX: ensure activityStats row exists
+      await prisma.activityStats.upsert({
+        where: { activityId: activity.id },
+        update: {},
+        create: { activityId: activity.id },
+      });
+
+      await prisma.activityStats.update({
+        where: { activityId: activity.id },
+        data: {
+          successfulGenerations: { increment: 1 },
+        },
+      });
+    } catch (err) {
+      console.error("Instrumentation error (HTML generation):", err);
+    }
+
     return new NextResponse(html, {
       status: 200,
       headers: {
         "Content-Type": "text/html; charset=utf-8",
-        "Content-Disposition": `attachment; filename="wordle-${encodeURIComponent(word.english)}.html"`,
+        "Content-Disposition": `attachment; filename="wordle-${encodeURIComponent(
+          word.english
+        )}.html"`,
       },
     });
   } catch (err: any) {
     console.error("[api/activities/[id]/html] ERROR:", err);
+
+    try {
+      await prisma.activityStats.upsert({
+        where: { activityId: Number(context.params?.id) },
+        update: {},
+        create: { activityId: Number(context.params?.id) },
+      });
+
+      await prisma.activityStats.update({
+        where: { activityId: Number(context.params?.id) },
+        data: {
+          failedGenerations: { increment: 1 },
+        },
+      });
+    } catch (err2) {
+      console.error("Instrumentation error (failed generation):", err2);
+    }
+
     return NextResponse.json(
       { error: "Failed to generate HTML", details: String(err?.message ?? err) },
       { status: 500 }

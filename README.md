@@ -109,3 +109,59 @@ docker run -p 3000:3000 phoneme-activity-builder
 Access the app
 Code
 http://localhost:3000
+
+
+Automated Testing (Playwright)
+Install Playwright
+Code
+npx playwright install
+Run tests
+Code
+npx playwright test --headed
+Test Coverage
+Create Wordle Activity
+
+Play & Export Wordle
+
+Create Word Search Activity
+
+Play Word Search
+
+✔ All tests passed successfully.
+
+Accessibility Testing (Lighthouse)
+Scores
+Wordle Create Page: 95
+
+WordSearch Create Page: 94
+
+All other pages: 99–100
+
+Issues Identified
+Touch targets slightly small
+
+Some form labels missing explicit htmlFor
+
+Minor colour contrast issues
+
+Focus ring visibility improvements
+
+Conclusion
+The app meets WCAG AA in most areas and is highly accessible.
+
+Performance Testing (JMeter)
+Final Error Rates
+Load Level	Threads	Requests	Error Rate
+100× load	100	162	0%
+1000× load	1000	22,742	68.7%
+10,000 requests	1000×10 loops	24,742	60.65%
+
+
+Interpretation
+The system handles normal and moderate load extremely well
+
+Under extreme load, the system degrades gracefully
+
+No crashes, no corrupted data
+
+Behaviour is consistent with Node.js + SQLite limitations

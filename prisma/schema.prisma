@@ -11,16 +11,17 @@ datasource db {
 model Activity {
   id         Int           @id @default(autoincrement())
   title      String
-  type       String        // WORDLE
+  type       String        // WORDLE or WORDSEARCH
   difficulty Int
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
 
-  //WordSearch (JSON stored as string)
+  // WordSearch (JSON stored as string)
   grid        String?      // JSON string
   placements  String?      // JSON string
 
   words      ActivityWord[]
+  stats      ActivityStats?
 }
 
 model ActivityWord {
@@ -39,3 +40,29 @@ model WordPhoneme {
   wordId   Int
   word     ActivityWord @relation(fields: [wordId], references: [id])
 }
+
+//
+// NEW: activity statistics
+//
+model ActivityStats {
+  id                    Int      @id @default(autoincrement())
+  activityId            Int      @unique
+  activity              Activity @relation(fields: [activityId], references: [id])
+
+  successfulGenerations Int      @default(0)
+  failedGenerations     Int      @default(0)
+  totalViews            Int      @default(0)
+  totalTimeOnPageMs     Int      @default(0)
+}
+
+//
+// NEW: Global app metrics
+//
+model AppMetrics {
+  id                        Int    @id @default(1)
+  totalActivities           Int    @default(0)
+  totalWordleActivities     Int    @default(0)
+  totalWordSearchActivities Int    @default(0)
+  totalGeneratedOutputs     Int    @default(0)
+}
+  
