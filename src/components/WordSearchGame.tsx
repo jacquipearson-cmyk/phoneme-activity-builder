@@ -62,12 +62,12 @@ export default function WordSearchGame({ activityId }: { activityId: number }) {
 
       setGrid(cellsGrid);
 
-      // ⭐ Parse placements JSON (string → array)
+      // Parse placements JSON (string → array)
       const parsedPlacements = Array.isArray(data.placements)
         ? data.placements
         : JSON.parse(data.placements || "[]");
 
-      // ⭐ Convert placements into Cell[] references
+      // Convert placements into Cell[] references
       const placementCells: Placement[] = parsedPlacements.map((p: any) => ({
         wordIndex: p.wordIndex,
         cells: p.cells.map((cell: any) => ({
@@ -79,7 +79,7 @@ export default function WordSearchGame({ activityId }: { activityId: number }) {
 
       setPlacements(placementCells);
 
-      // ⭐ Convert words + phonemes
+      // Convert words + phonemes
       setWords(
         data.words.map((w: any) => ({
           english: w.english,
@@ -105,7 +105,7 @@ export default function WordSearchGame({ activityId }: { activityId: number }) {
     phonemeMap[p.symbol] = `${p.label} (${p.example})`;
   });
 
-    function generateHTML() {
+    function generateHTML(newGrid = grid, newPlacements = placements) {
     const cookies = document.cookie.split("; ");
     const getCookie = (name: string) =>
       cookies.find((c) => c.startsWith(name + "="))?.split("=")[1];
@@ -203,8 +203,8 @@ ${darkModeCSS}
 </div>
 
 <script>
-const grid = ${JSON.stringify(grid)};
-const placements = ${JSON.stringify(placements)};
+const grid = ${JSON.stringify(newGrid)};
+const placements = ${JSON.stringify(newPlacements)};
 const words = ${JSON.stringify(words)};
 
 let isDragging = false;
@@ -455,7 +455,18 @@ renderWords();
     <main className={darkMode ? "dark-mode" : ""}>
       <div className="ws-container">
         <div className="generate-button-container">
-          <button className="ws-hint-btn" onClick={generateHTML}>
+          <button
+            className="ws-hint-btn"
+            onClick={async () => {
+              const res = await fetch(`/api/activities/${activityId}/wordsearch`, {
+                method: "POST",
+              });
+
+              const { grid: newGrid, placements: newPlacements } = await res.json();
+
+              generateHTML(newGrid, newPlacements);
+            }}
+          >
             Download HTML
           </button>
         </div>

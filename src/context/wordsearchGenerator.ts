@@ -19,7 +19,7 @@ export function generateWordSearch(words: WordInput[], size = 10) {
     cells: { symbol: string; row: number; column: number }[];
   }[] = [];
 
-  // ⭐ FULL 8‑DIRECTION SUPPORT
+  // FULL 8‑DIRECTION SUPPORT
   const directions = [
     // Horizontal
     { dr: 0, dc: 1 },   // →

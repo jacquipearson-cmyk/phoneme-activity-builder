@@ -1,4 +1,5 @@
 //add commets later
+/*
 "use client";
 
 import type { Cell, Placement } from "@/components/WordSearchGame";
@@ -13,14 +14,16 @@ export default function WordSearchGenerator({
   grid,
   placements,
   words,
+  activityId,
 }: {
   grid: Cell[][];
   placements: Placement[];
   words: Word[];
+  activityId: number;
 }) {
-  function generateHTML() {
-    const gridJSON = JSON.stringify(grid);
-    const placementsJSON = JSON.stringify(placements);
+  function generateHTML(newGrid: Cell[][], newPlacements: Placement[]) {
+    const gridJSON = JSON.stringify(newGrid);
+    const placementsJSON = JSON.stringify(newPlacements);
     const wordsJSON = JSON.stringify(words);
 
     const cookies = document.cookie.split("; ");
@@ -346,5 +349,19 @@ renderWords();
     URL.revokeObjectURL(url);
   }
 
-  return <button onClick={generateHTML}>Generate Word Search HTML</button>;
+  return (
+    <button
+      onClick={async () => {
+        const res = await fetch(`/api/activities/${activityId}/wordsearch`, {
+          method: "POST",
+        });
+
+        const { grid: newGrid, placements: newPlacements } = await res.json();
+
+        generateHTML(newGrid, newPlacements);
+      }}
+    >
+      Generate Word Search HTML
+    </button>
+  );
 }
