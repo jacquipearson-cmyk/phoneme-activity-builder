@@ -101,7 +101,7 @@ export async function GET(req: Request, context: RouteParams) {
     });
 
     // -------------------------------------------------------------
-    // INSTRUMENTATION FIX — ensure stats row exists
+    // Instermentation Fix — ensure stats row exists
     // -------------------------------------------------------------
     try {
       await prisma.appMetrics.upsert({
@@ -117,7 +117,7 @@ export async function GET(req: Request, context: RouteParams) {
         },
       });
 
-      // ⭐ FIX: ensure activityStats row exists
+      // Fix: ensure activityStats row exists
       await prisma.activityStats.upsert({
         where: { activityId: activity.id },
         update: {},

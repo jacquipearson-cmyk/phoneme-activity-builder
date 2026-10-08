@@ -1,7 +1,7 @@
 // src/app/wordle/[id]/page.tsx
 // -------------------------------------------------------------
 // Wordle Game Page (phoneme-based)
-//
+//s
 // redo 5: fixed formatting — do on others later
 //
 // NOTE TO SELF:

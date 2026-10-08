@@ -1,4 +1,4 @@
-//add commets later
+//context>AccessibilityContext.tsx
 "use client";
 
 import {
@@ -85,7 +85,7 @@ export function AccessibilityProvider({
   const [darkMode, setDarkModeState] =
     useState<boolean>(coercedInitialDarkMode);
 
-  const [difficulty, setDifficultyState] = useState<3 | 4 | 5>(3);   // ⭐ ADDED
+  const [difficulty, setDifficultyState] = useState<3 | 4 | 5>(3);  
 
   const [hydrated, setHydrated] = useState(false);
 
@@ -102,12 +102,12 @@ export function AccessibilityProvider({
       const savedFont = getCookie("phoneme-font");
       const savedColours = getCookie("phoneme-colours");
       const savedDarkMode = getCookie("phoneme-dark-mode");
-      const savedDifficulty = Number(getCookie("phoneme-difficulty"));   // ⭐ ADDED
+      const savedDifficulty = Number(getCookie("phoneme-difficulty"));   
 
       if (isFontOption(savedFont)) setFontState(savedFont);
       if (isColourScheme(savedColours)) setColourSchemeState(savedColours);
       if (savedDarkMode === "true") setDarkModeState(true);
-      if (isDifficulty(savedDifficulty)) setDifficultyState(savedDifficulty); // ⭐ ADDED
+      if (isDifficulty(savedDifficulty)) setDifficultyState(savedDifficulty); 
     } catch {
       // ignore cookie errors
     } finally {

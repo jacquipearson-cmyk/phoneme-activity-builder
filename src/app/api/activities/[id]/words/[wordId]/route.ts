@@ -36,7 +36,6 @@ export async function PATCH(req: Request, context: RouteParams) {
 
     // -------------------------------------------------------------
     // Transaction because I broke the DB like 3 times before this
-    // and I don’t trust anything anymore
     //
     // ensures:
     // - update word
@@ -64,7 +63,7 @@ export async function PATCH(req: Request, context: RouteParams) {
 
         // Try createMany first (faster)
         // NOTE: createMany used to crash randomly in SQLite so I added
-        // a fallback loop. Leaving it here for now willl go through all of it later to clean.
+        // a fallback loop.
         try {
           await tx.wordPhoneme.createMany({
             data: phonemes.map((p: any, idx: number) => ({
